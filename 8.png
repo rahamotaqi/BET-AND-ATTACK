@@ -1,0 +1,574 @@
+       return isObjectLike(value) && isArrayLike(value);
+    }
+    var isArrayLike = __webpack_require__(193), isObjectLike = __webpack_require__(43);
+    module.exports = isArrayLikeObject;
+}, function(module, exports, __webpack_require__) {
+    "use strict";
+    function _interopRequireDefault(obj) {
+        return obj && obj.__esModule ? obj : {
+            default: obj
+        };
+    }
+    function _toConsumableArray(arr) {
+        if (Array.isArray(arr)) {
+            for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+            return arr2;
+        }
+        return Array.from(arr);
+    }
+    function _defineProperty(obj, key, value) {
+        return key in obj ? Object.defineProperty(obj, key, {
+            value: value,
+            enumerable: !0,
+            configurable: !0,
+            writable: !0
+        }) : obj[key] = value, obj;
+    }
+    Object.defineProperty(exports, "__esModule", {
+        value: !0
+    });
+    var _filter2 = __webpack_require__(738), _filter3 = _interopRequireDefault(_filter2), _extends = Object.assign || function(target) {
+        for (var i = 1; i < arguments.length; i++) {
+            var source = arguments[i];
+            for (var key in source) Object.prototype.hasOwnProperty.call(source, key) && (target[key] = source[key]);
+        }
+        return target;
+    }, _slicedToArray = function() {
+        function sliceIterator(arr, i) {
+            var _arr = [], _n = !0, _d = !1, _e = void 0;
+            try {
+                for (var _s, _i = arr[Symbol.iterator](); !(_n = (_s = _i.next()).done) && (_arr.push(_s.value), 
+                !i || _arr.length !== i); _n = !0) ;
+            } catch (err) {
+                _d = !0, _e = err;
+            } finally {
+                try {
+                    !_n && _i.return && _i.return();
+                } finally {
+                    if (_d) throw _e;
+                }
+            }
+            return _arr;
+        }
+        return function(arr, i) {
+            if (Array.isArray(arr)) return arr;
+            if (Symbol.iterator in Object(arr)) return sliceIterator(arr, i);
+            throw new TypeError("Invalid attempt to destructure non-iterable instance");
+        };
+    }(), _raf = __webpack_require__(304), _raf2 = _interopRequireDefault(_raf), _util = __webpack_require__(132), alpha = function(begin, end, k) {
+        return begin + (end - begin) * k;
+    }, needContinue = function(_ref) {
+        return _ref.from !== _ref.to;
+    }, calStepperVals = function calStepperVals(easing, preVals, steps) {
+        var nextStepVals = (0, _util.mapObject)(function(key, val) {
+            if (needContinue(val)) {
+                var _easing = easing(val.from, val.to, val.velocity), _easing2 = _slicedToArray(_easing, 2), newX = _easing2[0], newV = _easing2[1];
+                return _extends({}, val, {
+                    from: newX,
+                    velocity: newV
+                });
+            }
+            return val;
+        }, preVals);
+        return steps < 1 ? (0, _util.mapObject)(function(key, val) {
+            return needContinue(val) ? _extends({}, val, {
+                velocity: alpha(val.velocity, nextStepVals[key].velocity, steps),
+                from: alpha(val.from, nextStepVals[key].from, steps)
+            }) : val;
+        }, preVals) : calStepperVals(easing, nextStepVals, steps - 1);
+    };
+    exports.default = function(from, to, easing, duration, render) {
+        var interKeys = (0, _util.getIntersectionKeys)(from, to), timingStyle = interKeys.reduce(function(res, key) {
+            return _extends({}, res, _defineProperty({}, key, [ from[key], to[key] ]));
+        }, {}), stepperStyle = interKeys.reduce(function(res, key) {
+            return _extends({}, res, _defineProperty({}, key, {
+                from: from[key],
+                velocity: 0,
+                to: to[key]
+            }));
+        }, {}), cafId = -1, preTime = void 0, beginTime = void 0, update = function() {
+            return null;
+        }, getCurrStyle = function() {
+            return (0, _util.mapObject)(function(key, val) {
+                return val.from;
+            }, stepperStyle);
+        }, shouldStopAnimation = function() {
+            return !(0, _filter3.default)(stepperStyle, needContinue).length;
+        }, stepperUpdate = function(now) {
+            preTime || (preTime = now);
+            var deltaTime = now - preTime, steps = deltaTime / easing.dt;
+            stepperStyle = calStepperVals(easing, stepperStyle, steps), render(_extends({}, from, to, getCurrStyle())), 
+            preTime = now, shouldStopAnimation() || (cafId = (0, _raf2.default)(update));
+        }, timingUpdate = function(now) {
+            beginTime || (beginTime = now);
+            var t = (now - beginTime) / duration, currStyle = (0, _util.mapObject)(function(key, val) {
+                return alpha.apply(void 0, _toConsumableArray(val).concat([ easing(t) ]));
+            }, timingStyle);
+            if (render(_extends({}, from, to, currStyle)), t < 1) cafId = (0, _raf2.default)(update); else {
+                var finalStyle = (0, _util.mapObject)(function(key, val) {
+                    return alpha.apply(void 0, _toConsumableArray(val).concat([ easing(1) ]));
+                }, timingStyle);
+                render(_extends({}, from, to, finalStyle));
+            }
+        };
+        return update = easing.isStepper ? stepperUpdate : timingUpdate, function() {
+            return (0, _raf2.default)(update), function() {
+                (0, _raf.cancel)(cafId);
+            };
+        };
+    };
+}, function(module, exports, __webpack_require__) {
+    function filter(collection, predicate) {
+        return (isArray(collection) ? arrayFilter : baseFilter)(collection, baseIteratee(predicate, 3));
+    }
+    var arrayFilter = __webpack_require__(297), baseFilter = __webpack_require__(739), baseIteratee = __webpack_require__(745), isArray = __webpack_require__(34);
+    module.exports = filter;
+}, function(module, exports, __webpack_require__) {
+    function baseFilter(collection, predicate) {
+        var result = [];
+        return baseEach(collection, function(value, index, collection) {
+            predicate(value, index, collection) && result.push(value);
+        }), result;
+    }
+    var baseEach = __webpack_require__(740);
+    module.exports = baseFilter;
+}, function(module, exports, __webpack_require__) {
+    var baseForOwn = __webpack_require__(741), createBaseEach = __webpack_require__(744), baseEach = createBaseEach(baseForOwn);
+    module.exports = baseEach;
+}, function(module, exports, __webpack_require__) {
+    function baseForOwn(object, iteratee) {
+        return object && baseFor(object, iteratee, keys);
+    }
+    var baseFor = __webpack_require__(742), keys = __webpack_require__(191);
+    module.exports = baseForOwn;
+}, function(module, exports, __webpack_require__) {
+    var createBaseFor = __webpack_require__(743), baseFor = createBaseFor();
+    module.exports = baseFor;
+}, function(module, exports) {
+    function createBaseFor(fromRight) {
+        return function(object, iteratee, keysFunc) {
+            for (var index = -1, iterable = Object(object), props = keysFunc(object), length = props.length; length--; ) {
+                var key = props[fromRight ? length : ++index];
+                if (!1 === iteratee(iterable[key], key, iterable)) break;
+            }
+            return object;
+        };
+    }
+    module.exports = createBaseFor;
+}, function(module, exports, __webpack_require__) {
+    function createBaseEach(eachFunc, fromRight) {
+        return function(collection, iteratee) {
+            if (null == collection) return collection;
+            if (!isArrayLike(collection)) return eachFunc(collection, iteratee);
+            for (var length = collection.length, index = fromRight ? length : -1, iterable = Object(collection); (fromRight ? index-- : ++index < length) && !1 !== iteratee(iterable[index], index, iterable); ) ;
+            return collection;
+        };
+    }
+    var isArrayLike = __webpack_require__(193);
+    module.exports = createBaseEach;
+}, function(module, exports, __webpack_require__) {
+    function baseIteratee(value) {
+        return "function" == typeof value ? value : null == value ? identity : "object" == typeof value ? isArray(value) ? baseMatchesProperty(value[0], value[1]) : baseMatches(value) : property(value);
+    }
+    var baseMatches = __webpack_require__(746), baseMatchesProperty = __webpack_require__(749), identity = __webpack_require__(195), isArray = __webpack_require__(34), property = __webpack_require__(759);
+    module.exports = baseIteratee;
+}, function(module, exports, __webpack_require__) {
+    function baseMatches(source) {
+        var matchData = getMatchData(source);
+        return 1 == matchData.length && matchData[0][2] ? matchesStrictComparable(matchData[0][0], matchData[0][1]) : function(object) {
+            return object === source || baseIsMatch(object, source, matchData);
+        };
+    }
+    var baseIsMatch = __webpack_require__(747), getMatchData = __webpack_require__(748), matchesStrictComparable = __webpack_require__(307);
+    module.exports = baseMatches;
+}, function(module, exports, __webpack_require__) {
+    function baseIsMatch(object, source, matchData, customizer) {
+        var index = matchData.length, length = index, noCustomizer = !customizer;
+        if (null == object) return !length;
+        for (object = Object(object); index--; ) {
+            var data = matchData[index];
+            if (noCustomizer && data[2] ? data[1] !== object[data[0]] : !(data[0] in object)) return !1;
+        }
+        for (;++index < length; ) {
+            data = matchData[index];
+            var key = data[0], objValue = object[key], srcValue = data[1];
+            if (noCustomizer && data[2]) {
+                if (void 0 === objValue && !(key in object)) return !1;
+            } else {
+                var stack = new Stack();
+                if (customizer) var result = customizer(objValue, srcValue, key, object, source, stack);
+                if (!(void 0 === result ? baseIsEqual(srcValue, objValue, COMPARE_PARTIAL_FLAG | COMPARE_UNORDERED_FLAG, customizer, stack) : result)) return !1;
+            }
+        }
+        return !0;
+    }
+    var Stack = __webpack_require__(289), baseIsEqual = __webpack_require__(187), COMPARE_PARTIAL_FLAG = 1, COMPARE_UNORDERED_FLAG = 2;
+    module.exports = baseIsMatch;
+}, function(module, exports, __webpack_require__) {
+    function getMatchData(object) {
+        for (var result = keys(object), length = result.length; length--; ) {
+            var key = result[length], value = object[key];
+            result[length] = [ key, value, isStrictComparable(value) ];
+        }
+        return result;
+    }
+    var isStrictComparable = __webpack_require__(306), keys = __webpack_require__(191);
+    module.exports = getMatchData;
+}, function(module, exports, __webpack_require__) {
+    function baseMatchesProperty(path, srcValue) {
+        return isKey(path) && isStrictComparable(srcValue) ? matchesStrictComparable(toKey(path), srcValue) : function(object) {
+            var objValue = get(object, path);
+            return void 0 === objValue && objValue === srcValue ? hasIn(object, path) : baseIsEqual(srcValue, objValue, COMPARE_PARTIAL_FLAG | COMPARE_UNORDERED_FLAG);
+        };
+    }
+    var baseIsEqual = __webpack_require__(187), get = __webpack_require__(750), hasIn = __webpack_require__(756), isKey = __webpack_require__(196), isStrictComparable = __webpack_require__(306), matchesStrictComparable = __webpack_require__(307), toKey = __webpack_require__(133), COMPARE_PARTIAL_FLAG = 1, COMPARE_UNORDERED_FLAG = 2;
+    module.exports = baseMatchesProperty;
+}, function(module, exports, __webpack_require__) {
+    function get(object, path, defaultValue) {
+        var result = null == object ? void 0 : baseGet(object, path);
+        return void 0 === result ? defaultValue : result;
+    }
+    var baseGet = __webpack_require__(308);
+    module.exports = get;
+}, function(module, exports, __webpack_require__) {
+    var memoizeCapped = __webpack_require__(752), rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g, reEscapeChar = /\\(\\)?/g, stringToPath = memoizeCapped(function(string) {
+        var result = [];
+        return 46 === string.charCodeAt(0) && result.push(""), string.replace(rePropName, function(match, number, quote, subString) {
+            result.push(quote ? subString.replace(reEscapeChar, "$1") : number || match);
+        }), result;
+    });
+    module.exports = stringToPath;
+}, function(module, exports, __webpack_require__) {
+    function memoizeCapped(func) {
+        var result = memoize(func, function(key) {
+            return cache.size === MAX_MEMOIZE_SIZE && cache.clear(), key;
+        }), cache = result.cache;
+        return result;
+    }
+    var memoize = __webpack_require__(753), MAX_MEMOIZE_SIZE = 500;
+    module.exports = memoizeCapped;
+}, function(module, exports, __webpack_require__) {
+    function memoize(func, resolver) {
+        if ("function" != typeof func || null != resolver && "function" != typeof resolver) throw new TypeError(FUNC_ERROR_TEXT);
+        var memoized = function() {
+            var args = arguments, key = resolver ? resolver.apply(this, args) : args[0], cache = memoized.cache;
+            if (cache.has(key)) return cache.get(key);
+            var result = func.apply(this, args);
+            return memoized.cache = cache.set(key, result) || cache, result;
+        };
+        return memoized.cache = new (memoize.Cache || MapCache)(), memoized;
+    }
+    var MapCache = __webpack_require__(190), FUNC_ERROR_TEXT = "Expected a function";
+    memoize.Cache = MapCache, module.exports = memoize;
+}, function(module, exports, __webpack_require__) {
+    function toString(value) {
+        return null == value ? "" : baseToString(value);
+    }
+    var baseToString = __webpack_require__(755);
+    module.exports = toString;
+}, function(module, exports, __webpack_require__) {
+    function baseToString(value) {
+        if ("string" == typeof value) return value;
+        if (isArray(value)) return arrayMap(value, baseToString) + "";
+        if (isSymbol(value)) return symbolToString ? symbolToString.call(value) : "";
+        var result = value + "";
+        return "0" == result && 1 / value == -INFINITY ? "-0" : result;
+    }
+    var Symbol = __webpack_require__(128), arrayMap = __webpack_require__(194), isArray = __webpack_require__(34), isSymbol = __webpack_require__(197), INFINITY = 1 / 0, symbolProto = Symbol ? Symbol.prototype : void 0, symbolToString = symbolProto ? symbolProto.toString : void 0;
+    module.exports = baseToString;
+}, function(module, exports, __webpack_require__) {
+    function hasIn(object, path) {
+        return null != object && hasPath(object, path, baseHasIn);
+    }
+    var baseHasIn = __webpack_require__(757), hasPath = __webpack_require__(758);
+    module.exports = hasIn;
+}, function(module, exports) {
+    function baseHasIn(object, key) {
+        return null != object && key in Object(object);
+    }
+    module.exports = baseHasIn;
+}, function(module, exports, __webpack_require__) {
+    function hasPath(object, path, hasFunc) {
+        path = castPath(path, object);
+        for (var index = -1, length = path.length, result = !1; ++index < length; ) {
+            var key = toKey(path[index]);
+            if (!(result = null != object && hasFunc(object, key))) break;
+            object = object[key];
+        }
+        return result || ++index != length ? result : !!(length = null == object ? 0 : object.length) && isLength(length) && isIndex(key, length) && (isArray(object) || isArguments(object));
+    }
+    var castPath = __webpack_require__(309), isArguments = __webpack_require__(298), isArray = __webpack_require__(34), isIndex = __webpack_require__(300), isLength = __webpack_require__(192), toKey = __webpack_require__(133);
+    module.exports = hasPath;
+}, function(module, exports, __webpack_require__) {
+    function property(path) {
+        return isKey(path) ? baseProperty(toKey(path)) : basePropertyDeep(path);
+    }
+    var baseProperty = __webpack_require__(760), basePropertyDeep = __webpack_require__(761), isKey = __webpack_require__(196), toKey = __webpack_require__(133);
+    module.exports = property;
+}, function(module, exports) {
+    function baseProperty(key) {
+        return function(object) {
+            return null == object ? void 0 : object[key];
+        };
+    }
+    module.exports = baseProperty;
+}, function(module, exports, __webpack_require__) {
+    function basePropertyDeep(path) {
+        return function(object) {
+            return baseGet(object, path);
+        };
+    }
+    var baseGet = __webpack_require__(308);
+    module.exports = basePropertyDeep;
+}, function(module, exports, __webpack_require__) {
+    "use strict";
+    function _interopRequireDefault(obj) {
+        return obj && obj.__esModule ? obj : {
+            default: obj
+        };
+    }
+    function _classCallCheck(instance, Constructor) {
+        if (!(instance instanceof Constructor)) throw new TypeError("Cannot call a class as a function");
+    }
+    function _possibleConstructorReturn(self, call) {
+        if (!self) throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+        return !call || "object" != typeof call && "function" != typeof call ? self : call;
+    }
+    function _inherits(subClass, superClass) {
+        if ("function" != typeof superClass && null !== superClass) throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+        subClass.prototype = Object.create(superClass && superClass.prototype, {
+            constructor: {
+                value: subClass,
+                enumerable: !1,
+                writable: !0,
+                configurable: !0
+            }
+        }), superClass && (Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass);
+    }
+    Object.defineProperty(exports, "__esModule", {
+        value: !0
+    });
+    var _class, _temp, _createClass = function() {
+        function defineProperties(target, props) {
+            for (var i = 0; i < props.length; i++) {
+                var descriptor = props[i];
+                descriptor.enumerable = descriptor.enumerable || !1, descriptor.configurable = !0, 
+                "value" in descriptor && (descriptor.writable = !0), Object.defineProperty(target, descriptor.key, descriptor);
+            }
+        }
+        return function(Constructor, protoProps, staticProps) {
+            return protoProps && defineProperties(Constructor.prototype, protoProps), staticProps && defineProperties(Constructor, staticProps), 
+            Constructor;
+        };
+    }(), _react = __webpack_require__(0), _react2 = _interopRequireDefault(_react), _TransitionGroup = __webpack_require__(255), _TransitionGroup2 = _interopRequireDefault(_TransitionGroup), _propTypes = __webpack_require__(1), _propTypes2 = _interopRequireDefault(_propTypes), _AnimateGroupChild = __webpack_require__(763), _AnimateGroupChild2 = _interopRequireDefault(_AnimateGroupChild), AnimateGroup = (_temp = _class = function(_Component) {
+        function AnimateGroup() {
+            return _classCallCheck(this, AnimateGroup), _possibleConstructorReturn(this, (AnimateGroup.__proto__ || Object.getPrototypeOf(AnimateGroup)).apply(this, arguments));
+        }
+        return _inherits(AnimateGroup, _Component), _createClass(AnimateGroup, [ {
+            key: "render",
+            value: function() {
+                var _props = this.props, component = _props.component, children = _props.children, appear = _props.appear, enter = _props.enter, leave = _props.leave;
+                return _react2.default.createElement(_TransitionGroup2.default, {
+                    component: component
+                }, _react.Children.map(children, function(child, index) {
+                    return _react2.default.createElement(_AnimateGroupChild2.default, {
+                        appearOptions: appear,
+                        enterOptions: enter,
+                        leaveOptions: leave,
+                        key: "child-" + index
+                    }, child);
+                }));
+            }
+        } ]), AnimateGroup;
+    }(_react.Component), _class.propTypes = {
+        appear: _propTypes2.default.object,
+        enter: _propTypes2.default.object,
+        leave: _propTypes2.default.object,
+        children: _propTypes2.default.oneOfType([ _propTypes2.default.array, _propTypes2.default.element ]),
+        component: _propTypes2.default.any
+    }, _class.defaultProps = {
+        component: "span"
+    }, _temp);
+    exports.default = AnimateGroup;
+}, function(module, exports, __webpack_require__) {
+    "use strict";
+    function _interopRequireDefault(obj) {
+        return obj && obj.__esModule ? obj : {
+            default: obj
+        };
+    }
+    function _objectWithoutProperties(obj, keys) {
+        var target = {};
+        for (var i in obj) keys.indexOf(i) >= 0 || Object.prototype.hasOwnProperty.call(obj, i) && (target[i] = obj[i]);
+        return target;
+    }
+    function _classCallCheck(instance, Constructor) {
+        if (!(instance instanceof Constructor)) throw new TypeError("Cannot call a class as a function");
+    }
+    function _possibleConstructorReturn(self, call) {
+        if (!self) throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+        return !call || "object" != typeof call && "function" != typeof call ? self : call;
+    }
+    function _inherits(subClass, superClass) {
+        if ("function" != typeof superClass && null !== superClass) throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+        subClass.prototype = Object.create(superClass && superClass.prototype, {
+            constructor: {
+                value: subClass,
+                enumerable: !1,
+                writable: !0,
+                configurable: !0
+            }
+        }), superClass && (Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass);
+    }
+    Object.defineProperty(exports, "__esModule", {
+        value: !0
+    });
+    var _class, _temp2, _isNumber2 = __webpack_require__(764), _isNumber3 = _interopRequireDefault(_isNumber2), _extends = Object.assign || function(target) {
+        for (var i = 1; i < arguments.length; i++) {
+            var source = arguments[i];
+            for (var key in source) Object.prototype.hasOwnProperty.call(source, key) && (target[key] = source[key]);
+        }
+        return target;
+    }, _createClass = function() {
+        function defineProperties(target, props) {
+            for (var i = 0; i < props.length; i++) {
+                var descriptor = props[i];
+                descriptor.enumerable = descriptor.enumerable || !1, descriptor.configurable = !0, 
+                "value" in descriptor && (descriptor.writable = !0), Object.defineProperty(target, descriptor.key, descriptor);
+            }
+        }
+        return function(Constructor, protoProps, staticProps) {
+            return protoProps && defineProperties(Constructor.prototype, protoProps), staticProps && defineProperties(Constructor, staticProps), 
+            Constructor;
+        };
+    }(), _react = __webpack_require__(0), _react2 = _interopRequireDefault(_react), _Transition = __webpack_require__(166), _Transition2 = _interopRequireDefault(_Transition), _propTypes = __webpack_require__(1), _propTypes2 = _interopRequireDefault(_propTypes), _Animate = __webpack_require__(287), _Animate2 = _interopRequireDefault(_Animate), parseDurationOfSingleTransition = function() {
+        var options = arguments.length > 0 && void 0 !== arguments[0] ? arguments[0] : {}, steps = options.steps, duration = options.duration;
+        return steps && steps.length ? steps.reduce(function(result, entry) {
+            return result + ((0, _isNumber3.default)(entry.duration) && entry.duration > 0 ? entry.duration : 0);
+        }, 0) : (0, _isNumber3.default)(duration) ? duration : 0;
+    }, AnimateGroupChild = (_temp2 = _class = function(_Component) {
+        function AnimateGroupChild() {
+            var _ref, _temp, _this, _ret;
+            _classCallCheck(this, AnimateGroupChild);
+            for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) args[_key] = arguments[_key];
+            return _temp = _this = _possibleConstructorReturn(this, (_ref = AnimateGroupChild.__proto__ || Object.getPrototypeOf(AnimateGroupChild)).call.apply(_ref, [ this ].concat(args))), 
+            _this.state = {
+                isActive: !1
+            }, _this.handleEnter = function(node, isAppearing) {
+                var _this$props = _this.props, appearOptions = _this$props.appearOptions, enterOptions = _this$props.enterOptions;
+                _this.handleStyleActive(isAppearing ? appearOptions : enterOptions);
+            }, _this.handleExit = function() {
+                _this.handleStyleActive(_this.props.leaveOptions);
+            }, _ret = _temp, _possibleConstructorReturn(_this, _ret);
+        }
+        return _inherits(AnimateGroupChild, _Component), _createClass(AnimateGroupChild, [ {
+            key: "handleStyleActive",
+            value: function(style) {
+                if (style) {
+                    var onAnimationEnd = style.onAnimationEnd ? function() {
+                        style.onAnimationEnd();
+                    } : null;
+                    this.setState(_extends({}, style, {
+                        onAnimationEnd: onAnimationEnd,
+                        isActive: !0
+                    }));
+                }
+            }
+        }, {
+            key: "parseTimeout",
+            value: function() {
+                var _props = this.props, appearOptions = _props.appearOptions, enterOptions = _props.enterOptions, leaveOptions = _props.leaveOptions;
+                return parseDurationOfSingleTransition(appearOptions) + parseDurationOfSingleTransition(enterOptions) + parseDurationOfSingleTransition(leaveOptions);
+            }
+        }, {
+            key: "render",
+            value: function() {
+                var _this2 = this, _props2 = this.props, children = _props2.children, props = (_props2.appearOptions, 
+                _props2.enterOptions, _props2.leaveOptions, _objectWithoutProperties(_props2, [ "children", "appearOptions", "enterOptions", "leaveOptions" ]));
+                return _react2.default.createElement(_Transition2.default, _extends({}, props, {
+                    onEnter: this.handleEnter,
+                    onExit: this.handleExit,
+                    timeout: this.parseTimeout()
+                }), function(transitionState) {
+                    return _react2.default.createElement(_Animate2.default, _this2.state, _react.Children.only(children));
+                });
+            }
+        } ]), AnimateGroupChild;
+    }(_react.Component), _class.propTypes = {
+        appearOptions: _propTypes2.default.object,
+        enterOptions: _propTypes2.default.object,
+        leaveOptions: _propTypes2.default.object,
+        children: _propTypes2.default.element
+    }, _temp2);
+    exports.default = AnimateGroupChild;
+}, function(module, exports, __webpack_require__) {
+    function isNumber(value) {
+        return "number" == typeof value || isObjectLike(value) && baseGetTag(value) == numberTag;
+    }
+    var baseGetTag = __webpack_require__(60), isObjectLike = __webpack_require__(43), numberTag = "[object Number]";
+    module.exports = isNumber;
+}, function(module, __webpack_exports__, __webpack_require__) {
+    "use strict";
+    function _classCallCheck(instance, Constructor) {
+        if (!(instance instanceof Constructor)) throw new TypeError("Cannot call a class as a function");
+    }
+    function _possibleConstructorReturn(self, call) {
+        if (!self) throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+        return !call || "object" != typeof call && "function" != typeof call ? self : call;
+    }
+    function _inherits(subClass, superClass) {
+        if ("function" != typeof superClass && null !== superClass) throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+        subClass.prototype = Object.create(superClass && superClass.prototype, {
+            constructor: {
+                value: subClass,
+                enumerable: !1,
+                writable: !0,
+                configurable: !0
+            }
+        }), superClass && (Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass);
+    }
+    var _class, _class2, _temp, __WEBPACK_IMPORTED_MODULE_0_lodash_isArray__ = __webpack_require__(13), __WEBPACK_IMPORTED_MODULE_0_lodash_isArray___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_lodash_isArray__), __WEBPACK_IMPORTED_MODULE_1_react__ = __webpack_require__(0), __WEBPACK_IMPORTED_MODULE_1_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_react__), __WEBPACK_IMPORTED_MODULE_2_prop_types__ = __webpack_require__(1), __WEBPACK_IMPORTED_MODULE_2_prop_types___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_prop_types__), __WEBPACK_IMPORTED_MODULE_3__util_PureRender__ = __webpack_require__(5), __WEBPACK_IMPORTED_MODULE_4__util_DataUtils__ = __webpack_require__(9), _extends = Object.assign || function(target) {
+        for (var i = 1; i < arguments.length; i++) {
+            var source = arguments[i];
+            for (var key in source) Object.prototype.hasOwnProperty.call(source, key) && (target[key] = source[key]);
+        }
+        return target;
+    }, _createClass = function() {
+        function defineProperties(target, props) {
+            for (var i = 0; i < props.length; i++) {
+                var descriptor = props[i];
+                descriptor.enumerable = descriptor.enumerable || !1, descriptor.configurable = !0, 
+                "value" in descriptor && (descriptor.writable = !0), Object.defineProperty(target, descriptor.key, descriptor);
+            }
+        }
+        return function(Constructor, protoProps, staticProps) {
+            return protoProps && defineProperties(Constructor.prototype, protoProps), staticProps && defineProperties(Constructor, staticProps), 
+            Constructor;
+        };
+    }(), defaultFormatter = function(value) {
+        return __WEBPACK_IMPORTED_MODULE_0_lodash_isArray___default()(value) && Object(__WEBPACK_IMPORTED_MODULE_4__util_DataUtils__.g)(value[0]) && Object(__WEBPACK_IMPORTED_MODULE_4__util_DataUtils__.g)(value[1]) ? value.join(" ~ ") : value;
+    }, DefaultTooltipContent = Object(__WEBPACK_IMPORTED_MODULE_3__util_PureRender__.a)((_temp = _class2 = function(_Component) {
+        function DefaultTooltipContent() {
+            return _classCallCheck(this, DefaultTooltipContent), _possibleConstructorReturn(this, (DefaultTooltipContent.__proto__ || Object.getPrototypeOf(DefaultTooltipContent)).apply(this, arguments));
+        }
+        return _inherits(DefaultTooltipContent, _Component), _createClass(DefaultTooltipContent, [ {
+            key: "renderContent",
+            value: function() {
+                var _props = this.props, payload = _props.payload, separator = _props.separator, formatter = _props.formatter, itemStyle = _props.itemStyle, itemSorter = _props.itemSorter;
+                if (payload && payload.length) {
+                    var listStyle = {
+                        padding: 0,
+                        margin: 0
+                    }, items = payload.sort(itemSorter).map(function(entry, i) {
+                        var finalItemStyle = _extends({
+                            display: "block",
+                            paddingTop: 4,
+                            paddingBottom: 4,
+                            color: entry.color || "#000"
+                        }, itemStyle), hasName = Object(__WEBPACK_IMPORTED_MODULE_4__util_DataUtils__.g)(entry.name), finalFormatter = entry.formatter || formatter || defaultFormatter;
+                        return __WEBPACK_IMPORTED_MODULE_1_react___default.a.createElement("li", {
+                            className: "recharts-tooltip-item",
+                            key: "tooltip-item-" + i,
+                            style: finalItemStyle
+                        }, hasName ? __WEBPACK_IMPORTED_MODULE_1_react___default.a.createElement("span", {
+                
